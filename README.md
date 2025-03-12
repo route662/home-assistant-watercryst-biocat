@@ -2,9 +2,9 @@
 
 Diese Integration ermöglicht die Einbindung von Watercryst Biocat-Geräten in Home Assistant.
 
-## Funktionsweise der Watercryst Biocat KLS3000-C
+## Funktionsweise der Watercryst Biocat
 
-Die Watercryst Biocat KLS3000-C ist ein innovatives System zur Wasseraufbereitung, das Desinfektion, Mikro-Leckage-Erkennung und automatische Steuerung der Wasserzufuhr integriert. Es sorgt für eine kontinuierliche Überwachung und Anpassung der Wasserqualität und ist besonders für Trinkwasseraufbereitung sowie industrielle Anwendungen geeignet. Das System gewährleistet eine zuverlässige und effiziente Wasserbehandlung, indem es die Wasserzirkulation optimiert und sicherstellt, dass nur sauberes Wasser bereitgestellt wird. Weitere Informationen hierzu siehe Herstellerwebseite.
+Der Watercryst Biocat (z.B. KLS3000-C) ist ein innovatives System zur Wasseraufbereitung, das Desinfektion, Mikro-Leckage-Erkennung und automatische Steuerung der Wasserzufuhr integriert. Es sorgt für eine kontinuierliche Überwachung und Anpassung der Wasserqualität und ist besonders für Trinkwasseraufbereitung sowie industrielle Anwendungen geeignet. Das System gewährleistet eine zuverlässige und effiziente Wasserbehandlung, indem es die Wasserzirkulation optimiert und sicherstellt, dass nur sauberes Wasser bereitgestellt wird. Weitere Informationen hierzu siehe Herstellerwebseite.
 
 ## Installation
 
@@ -43,3 +43,9 @@ Dieses Projekt steht unter der [GPL-3.0-Lizenz](LICENSE).
 
 ## Acknowledgments
 This integration is based on the work from the [Simon42 Community Forum](https://community.simon42.com/t/curl-in-rest-sensor-wandeln/24438) and the [Watercryst API documentation](https://appapi.watercryst.com/).
+
+### Unterstütze das Projekt
+
+Wenn dir dieses Projekt gefällt und du es unterstützen möchtest, kannst du mir einen Kaffee spendieren:  
+[Buy me a coffee](https://buymeacoffee.com/route662)
+
