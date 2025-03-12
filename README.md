@@ -49,3 +49,9 @@ This integration is based on the work from the [Simon42 Community Forum](https:/
 Wenn dir dieses Projekt gefällt und du es unterstützen möchtest, kannst du mir einen Kaffee spendieren:  
 [Buy me a coffee](https://buymeacoffee.com/route662)
 
+
+
+#### Disclaimer
+This project is not affiliated with or endorsed by Watercryst. Use at your own risk.
+
+
