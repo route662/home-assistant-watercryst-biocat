@@ -1,4 +1,6 @@
 {
   "name": "watercryst_biocat",
   "repository": "route662/home-assistant-watercryst-biocat",
+  "render_readme": true,
+  "icon": "https://raw.githubusercontent.com/route662/home-assistant-watercryst-biocat/main/custom_components/watercryst_biocat/logo.png"
 }
