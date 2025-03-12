@@ -1,67 +1,56 @@
-import logging
+"""Sensor handling for Watercryst Biocat."""
+from homeassistant.helpers.entity import Entity
 import requests
 
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .const import DOMAIN
+API_URL = "https://appapi.watercryst.com/v1"
+SENSORS = {
+    "waterTemp": {"name": "Water Temperature", "unit": "°C"},
+    "pressure": {"name": "Water Pressure", "unit": "bar"},
+    "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L"},
+    "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s"},
+    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L"},
+}
 
-_LOGGER = logging.getLogger(__name__)
 
-API_URL = "https://appapi.watercryst.com/v1/measurements/direct"
-
-def get_data(api_key):
-    """Fetch data from the API."""
+def fetch_data(api_key):
+    """Get data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
     try:
-        response = requests.get(API_URL, headers={"x-api-key": api_key})
-        response.raise_for_status()
+        response = requests.get(f"{API_URL}/measurements/direct", headers=headers)
         return response.json()
     except Exception as e:
-        _LOGGER.error("Error fetching data: %s", e)
-        return {}
+        return {"error": str(e)}
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Set up the Watercryst Biocat sensors."""
+    """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
-    data = await hass.async_add_executor_job(get_data, api_key)
+    data = fetch_data(api_key)
+    sensors = [WatercrystSensor(sensor, data.get(sensor, None)) for sensor in SENSORS]
+    async_add_entities(sensors)
 
-    sensors = []
-    for key, name, unit in [
-        ("waterTemp", "Public Water Temperature", "°C"),
-        ("pressure", "Waterpressure to Building", "bar"),
-        ("lastWaterTapVolume", "Last Water Tap Volume", "L"),
-        ("lastWaterTapDuration", "Last Water Tap Duration", "s"),
-    ]:
-        sensors.append(WatercrystSensor(api_key, key, name, unit, data))
 
-    async_add_entities(sensors, True)
+class WatercrystSensor(Entity):
+    """Representation of a Watercryst Biocat sensor."""
 
-class WatercrystSensor(SensorEntity):
-    """Representation of a Watercryst sensor."""
-
-    def __init__(self, api_key, sensor_type, name, unit, data):
+    def __init__(self, sensor_type, value):
         """Initialize the sensor."""
-        self._api_key = api_key
         self._sensor_type = sensor_type
-        self._name = name
-        self._unit = unit
-        self._state = data.get(sensor_type)
+        self._value = value
+        self._name = SENSORS[sensor_type]["name"]
+        self._unit = SENSORS[sensor_type]["unit"]
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return self._name
+        return f"Biocat {self._name}"
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return self._value
 
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement."""
         return self._unit
-
-    def update(self):
-        """Fetch new state data for the sensor."""
-        data = get_data(self._api_key)
-        self._state = data.get(self._sensor_type)
