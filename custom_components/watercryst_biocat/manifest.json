@@ -9,5 +9,4 @@
   "codeowners": ["@route662"],
   "config_flow": true,
   "iot_class": "cloud_polling"
-  "image": "https://github.com/route662/home-assistant-watercryst-biocat/raw/main/custom_components/watercryst_biocat/logo.png"
 }
