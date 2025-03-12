@@ -2,6 +2,10 @@
 
 Diese Integration ermöglicht die Einbindung von Watercryst Biocat-Geräten in Home Assistant.
 
+## Funktionsweise der Watercryst Biocat KLS3000-C
+
+Die Watercryst Biocat KLS3000-C ist ein innovatives System zur Wasseraufbereitung, das Desinfektion, Mikro-Leckage-Erkennung und automatische Steuerung der Wasserzufuhr integriert. Es sorgt für eine kontinuierliche Überwachung und Anpassung der Wasserqualität und ist besonders für Trinkwasseraufbereitung sowie industrielle Anwendungen geeignet. Das System gewährleistet eine zuverlässige und effiziente Wasserbehandlung, indem es die Wasserzirkulation optimiert und sicherstellt, dass nur sauberes Wasser bereitgestellt wird. Weitere Informationen hierzu siehe Herstellerwebseite.
+
 ## Installation
 
 ### Über HACS
