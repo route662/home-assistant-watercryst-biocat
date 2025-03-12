@@ -1,10 +1,9 @@
 {
   "domain": "watercryst_biocat",
   "name": "Watercryst Biocat",
+  "version": "1.0.0",
   "documentation": "https://github.com/route662/home-assistant-watercryst-biocat",
   "dependencies": [],
-  "codeowners": route662
-  "requirements": [],
-  "version": "1.0.0",
-  "config_flow": true
+  "codeowners": ["@route662"],
+  "requirements": []
 }
