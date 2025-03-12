@@ -36,3 +36,7 @@ Diese Integration ermöglicht die Einbindung von Watercryst Biocat-Geräten in H
 ## Lizenz
 
 Dieses Projekt steht unter der [GPL-3.0-Lizenz](LICENSE).
+
+## Acknowledgments
+This integration is based on the work from the [Simon42 Community Forum](https://community.simon42.com/t/curl-in-rest-sensor-wandeln/24438) and the [Watercryst API documentation](https://appapi.watercryst.com/).
+
