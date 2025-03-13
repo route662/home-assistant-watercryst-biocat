@@ -1,7 +1,7 @@
 {
   "domain": "home-assistant-watercryst-biocat",
   "name": "Watercryst Biocat",
-  "version": "1.0.2",
+  "version": "1.0.6",
   "documentation": "https://github.com/route662/home-assistant-watercryst-biocat",
   "dependencies": [],
   "requirements": [],
