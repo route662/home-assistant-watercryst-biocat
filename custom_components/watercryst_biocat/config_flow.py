@@ -15,5 +15,5 @@ class WatercrystConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", data_schema=vol.Schema({
             vol.Required("api_key"): str,
             vol.Required("update_interval", default=5): vol.All(vol.Coerce(int), vol.Range(min=2, max=60))
-        }))
+        }), errors={})
 
