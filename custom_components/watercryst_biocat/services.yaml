@@ -1,0 +1,15 @@
+open_water_supply:
+  name: "Open Water Supply"
+  description: "Open the water supply"
+  fields:
+    api_key:
+      description: "API Key"
+      example: "your_api_key"
+
+shut_off_water_supply:
+  name: "Shut Off Water Supply"
+  description: "Shut off the water supply"
+  fields:
+    api_key:
+      description: "API Key"
+      example: "your_api_key"

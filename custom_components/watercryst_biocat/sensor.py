@@ -14,6 +14,7 @@ SENSORS = {
     "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L"},
     "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s"},
     "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L"},
+    "waterSupplyState": {"name": "Water Supply State", "unit": None},  # Neuer Sensor
 }
 
 def fetch_data(api_key):
@@ -22,7 +23,15 @@ def fetch_data(api_key):
     try:
         response = requests.get(f"{API_URL}/measurements/direct", headers=headers)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        
+        # Abfrage des Zustands der Wasserzufuhr
+        response_state = requests.get(f"{API_URL}/state", headers=headers)
+        response_state.raise_for_status()
+        state_data = response_state.json()
+        data["waterSupplyState"] = state_data.get("mode", {}).get("id", "unknown")
+        
+        return data
     except requests.RequestException as e:
         _LOGGER.error("Error fetching data: %s", e)
         return {}
