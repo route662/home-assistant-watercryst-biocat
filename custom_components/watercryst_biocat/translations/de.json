@@ -2,8 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Watercryst Biocat API",
-        "description": "Bitte API-Key eingeben."
+        "data": {
+          "api_key": "API-Schlüssel",
+          "update_interval": "Aktualisierungsintervall (Sekunden)"
+        },
+        "title": "Watercryst Biocat Konfiguration",
+        "description": "Bitte geben Sie Ihren API-Schlüssel und das Aktualisierungsintervall ein."
       }
     }
   }
