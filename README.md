@@ -45,7 +45,7 @@ Dieses Projekt steht unter der [GPL-3.0-Lizenz](LICENSE).
 This integration is based on the work from the [Simon42 Community Forum](https://community.simon42.com/t/curl-in-rest-sensor-wandeln/24438) and the [Watercryst API documentation](https://appapi.watercryst.com/).
 
 ## Logo
-The logo used in this project is the property of WATERCryst Wassertechnik GmbH and is used here for informational purposes only. For more details, visit [Watercryst Wassertechnik Heatpump Website](https://watercryst.com).
+The logo used in this project is the property of WATERCryst Wassertechnik GmbH and is used here for informational purposes only. For more details, visit [Watercryst Wassertechnik Website](https://watercryst.com).
 
 ### Unterstütze das Projekt
 
