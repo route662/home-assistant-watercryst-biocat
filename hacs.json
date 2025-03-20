@@ -1,6 +1,11 @@
 {
   "name": "Watercryst Biocat",
-  "repository": "route662/home-assistant-watercryst-biocat",
+  "repository": "https://github.com/route662/home-assistant-watercryst-biocat",
   "render_readme": true,
-  "icon": "https://raw.githubusercontent.com/route662/home-assistant-watercryst-biocat/main/custom_components/watercryst_biocat/logo.png"
+  "config_flow": true,
+  "icon": "https://raw.githubusercontent.com/route662/home-assistant-watercryst-biocat/main/custom_components/watercryst_biocat/logo.png",
+  "domains": ["sensor", "binary_sensor"],
+  "iot_class": "cloud_polling",
+  "country": ["DE", "AT"],
+  "zip_release": false
 }
