@@ -26,19 +26,23 @@ async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
     data = fetch_data(api_key)
-    sensors = [WatercrystSensor(sensor, data.get(sensor, None)) for sensor in SENSORS]
+    sensors = [
+        WatercrystSensor(sensor, data.get(sensor, None), api_key)
+        for sensor in SENSORS
+    ]
     async_add_entities(sensors)
 
 
 class WatercrystSensor(Entity):
     """Representation of a Watercryst Biocat sensor."""
 
-    def __init__(self, sensor_type, value):
+    def __init__(self, sensor_type, value, api_key):
         """Initialize the sensor."""
         self._sensor_type = sensor_type
         self._value = value
         self._name = SENSORS[sensor_type]["name"]
         self._unit = SENSORS[sensor_type]["unit"]
+        self._api_key = api_key
 
     @property
     def name(self):
@@ -54,3 +58,18 @@ class WatercrystSensor(Entity):
     def unit_of_measurement(self):
         """Return the unit of measurement."""
         return self._unit
+
+    @property
+    def unique_id(self):
+        """Return a unique ID for the sensor."""
+        return f"{self._api_key}_{self._sensor_type}"
+
+    @property
+    def device_info(self):
+        """Return device information for the sensor."""
+        return {
+            "identifiers": {(DOMAIN, self._api_key)},
+            "name": "Watercryst Biocat",
+            "manufacturer": "Watercryst",
+            "model": "Biocat",
+        }
