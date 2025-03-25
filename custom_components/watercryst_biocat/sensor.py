@@ -17,19 +17,29 @@ def fetch_data(api_key):
     headers = {"accept": "application/json", "x-api-key": api_key}
     try:
         response = requests.get(f"{API_URL}/measurements/direct", headers=headers)
-        return response.json()
+        response.raise_for_status()  # Raise an error for HTTP issues
+        data = response.json()
+        _LOGGER.debug("API response: %s", data)  # Log the API response
+        return data
     except Exception as e:
-        return {"error": str(e)}
+        _LOGGER.error("Error fetching data from API: %s", e)
+        return {}
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
     data = fetch_data(api_key)
+
+    if not data:
+        _LOGGER.error("No data received from API. Sensors will not be created.")
+        return
+
     sensors = [
         WatercrystSensor(sensor, data.get(sensor, None), api_key)
         for sensor in SENSORS
     ]
+    _LOGGER.debug("Created sensors: %s", [sensor.name for sensor in sensors])
     async_add_entities(sensors)
 
 
@@ -43,6 +53,7 @@ class WatercrystSensor(Entity):
         self._name = SENSORS[sensor_type]["name"]
         self._unit = SENSORS[sensor_type]["unit"]
         self._api_key = api_key
+        _LOGGER.debug("Initialized sensor: %s with value: %s", self._name, self._value)
 
     @property
     def name(self):
