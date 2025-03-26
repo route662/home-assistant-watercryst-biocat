@@ -4,14 +4,12 @@ from homeassistant.core import HomeAssistant
 
 DOMAIN = "watercryst_biocat"
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Watercryst Biocat from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
-    hass.async_create_task(hass.config_entries.async_forward_entry_setup(entry, "sensor"))
+    await hass.config_entries.async_forward_entry_setup(entry, "sensor")  # Warten auf die Weiterleitung
     return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""

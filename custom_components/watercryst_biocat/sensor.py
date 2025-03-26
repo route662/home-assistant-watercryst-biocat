@@ -1,6 +1,8 @@
 """Sensor handling for Watercryst Biocat."""
 from homeassistant.helpers.entity import Entity
 import requests
+import aiohttp
+from . import DOMAIN
 
 API_URL = "https://appapi.watercryst.com/v1"
 SENSORS = {
@@ -12,24 +14,25 @@ SENSORS = {
 }
 
 
-def fetch_data(api_key):
-    """Get data from the Watercryst Biocat API."""
+async def fetch_data(api_key):
+    """Get data from the Watercryst Biocat API asynchronously."""
     headers = {"accept": "application/json", "x-api-key": api_key}
-    try:
-        response = requests.get(f"{API_URL}/measurements/direct", headers=headers)
-        response.raise_for_status()  # Raise an error for HTTP issues
-        data = response.json()
-        _LOGGER.debug("API response: %s", data)  # Log the API response
-        return data
-    except Exception as e:
-        _LOGGER.error("Error fetching data from API: %s", e)
-        return {}
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(f"{API_URL}/measurements/direct", headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()
+                _LOGGER.debug("API response: %s", data)  # Log the API response
+                return data
+        except Exception as e:
+            _LOGGER.error("Error fetching data from API: %s", e)
+            return {}
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
-    data = fetch_data(api_key)
+    data = await fetch_data(api_key)
 
     if not data:
         _LOGGER.error("No data received from API. Sensors will not be created.")
