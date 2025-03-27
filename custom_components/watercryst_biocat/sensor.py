@@ -1,8 +1,10 @@
 """Sensor handling for Watercryst Biocat."""
+import logging
 from homeassistant.helpers.entity import Entity
-import requests
 import aiohttp
 from . import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)  # Logger für die Integration
 
 API_URL = "https://appapi.watercryst.com/v1"
 SENSORS = {
