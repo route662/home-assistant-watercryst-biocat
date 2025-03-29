@@ -60,7 +60,7 @@ class WatercrystSensor(Entity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"sensor.{self._sensor_type}"
+        return SENSORS[self._sensor_type]["name"]  # Name aus dem SENSORS-Dictionary
 
     @property
     def state(self):
