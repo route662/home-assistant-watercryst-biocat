@@ -1,11 +1,15 @@
 {
   "domain": "watercryst_biocat",
   "name": "Watercryst Biocat",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "documentation": "https://github.com/route662/home-assistant-watercryst-biocat",
   "dependencies": [],
   "requirements": ["requests>=2.25.1"],
   "codeowners": ["@route662"],
   "config_flow": true,
-  "iot_class": "cloud_polling"
+  "iot_class": "cloud_polling",
+  "translations": {
+    "en": "translations/en.json",
+    "de": "translations/de.json"
+  }
 }

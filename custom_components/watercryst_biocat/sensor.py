@@ -60,7 +60,7 @@ class WatercrystSensor(Entity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return SENSORS[self._sensor_type]["name"]  # Name aus dem SENSORS-Dictionary
+        return SENSORS[self._sensor_type]["name"]
 
     @property
     def state(self):
@@ -76,3 +76,10 @@ class WatercrystSensor(Entity):
     def icon(self):
         """Return the icon of the sensor."""
         return SENSORS[self._sensor_type]["icon"]
+
+    async def async_update(self):
+        """Fetch new data for the sensor."""
+        _LOGGER.debug("Updating sensor: %s", self._sensor_type)
+        data = await fetch_data(self._api_key)  # Abrufen der aktuellen Daten
+        if data:
+            self._value = data.get(self._sensor_type, None)  # Aktualisieren des Werts
