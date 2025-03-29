@@ -8,12 +8,12 @@ _LOGGER = logging.getLogger(__name__)  # Logger für die Integration
 
 API_URL = "https://appapi.watercryst.com/v1"
 SENSORS = {
-    "waterTemp": {"name": "Water Temperature", "unit": "°C", "icon": "mdi:thermometer"},
-    "pressure": {"name": "Water Pressure", "unit": "bar", "icon": "mdi:gauge"},
-    "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L", "icon": "mdi:cup-water"},
-    "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s", "icon": "mdi:timer"},
-    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L", "icon": "mdi:water"},
-    "waterSupplyState": {"name": "Water Supply State", "unit": None, "icon": "mdi:water-pump"}  # Neuer Sensor
+    "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
+    "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
+    "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
+    "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
+    "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
+    "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"}  # Neuer Sensor
 }
 
 
@@ -72,7 +72,8 @@ class WatercrystSensor(Entity):
             "pressure": "Wasserdruck",
             "lastWaterTapVolume": "Letztes Wasserzapfvolumen",
             "lastWaterTapDuration": "Dauer des letzten Wasserzapfens",
-            "totalWaterConsumptionToday": "Gesamtwasserverbrauch heute"
+            "totalWaterConsumptionToday": "Gesamtwasserverbrauch heute",
+            "waterSupplyState": "Zustand der Wasserzufuhr"  # Neuer Sensor
         }
         return fixed_names.get(self._sensor_type, f"Unbekannter Sensor ({self._sensor_type})")
 
