@@ -1,7 +1,7 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
 from homeassistant.helpers.entity import Entity
-import aiohttp
+import requests
 from . import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)  # Logger für die Integration
@@ -12,29 +12,36 @@ SENSORS = {
     "pressure": {"name": "Water Pressure", "unit": "bar", "icon": "mdi:gauge"},
     "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L", "icon": "mdi:cup-water"},
     "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s", "icon": "mdi:timer"},
-    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L", "icon": "mdi:water"}
+    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L", "icon": "mdi:water"},
+    "waterSupplyState": {"name": "Water Supply State", "unit": None, "icon": "mdi:water-pump"}  # Neuer Sensor
 }
 
 
-async def fetch_data(api_key):
-    """Get data from the Watercryst Biocat API asynchronously."""
+def fetch_data(api_key):
+    """Get data from the Watercryst Biocat API."""
     headers = {"accept": "application/json", "x-api-key": api_key}
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(f"{API_URL}/measurements/direct", headers=headers) as response:
-                response.raise_for_status()
-                data = await response.json()
-                _LOGGER.debug("API response: %s", data)  # Log the API response
-                return data
-        except Exception as e:
-            _LOGGER.error("Error fetching data from API: %s", e)
-            return {}
+    try:
+        # Abrufen der Messdaten
+        response = requests.get(f"{API_URL}/measurements/direct", headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        # Abrufen des Zustands der Wasserzufuhr
+        response_state = requests.get(f"{API_URL}/state", headers=headers)
+        response_state.raise_for_status()
+        state_data = response_state.json()
+        data["waterSupplyState"] = state_data.get("mode", {}).get("id", "unknown")
+
+        return data
+    except requests.RequestException as e:
+        _LOGGER.error("Error fetching data: %s", e)
+        return {}
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
-    data = await fetch_data(api_key)
+    data = await hass.async_add_executor_job(fetch_data, api_key)
 
     if not data:
         _LOGGER.error("No data received from API. Sensors will not be created.")
@@ -87,6 +94,6 @@ class WatercrystSensor(Entity):
     async def async_update(self):
         """Fetch new data for the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._sensor_type)
-        data = await fetch_data(self._api_key)
+        data = await hass.async_add_executor_job(fetch_data, self._api_key)
         if data:
             self._value = data.get(self._sensor_type, None)
