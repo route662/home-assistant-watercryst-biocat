@@ -61,11 +61,11 @@ class WatercrystSensor(Entity):
     def name(self):
         """Return a fixed German name for the sensor."""
         fixed_names = {
-            "water_temperature": "Wassertemperatur",
-            "water_pressure": "Wasserdruck",
-            "last_water_tap_volume": "Letztes Wasserzapfvolumen",
-            "last_water_tap_duration": "Dauer des letzten Wasserzapfens",
-            "total_water_consumption_today": "Gesamtwasserverbrauch heute"
+            "waterTemp": "Wassertemperatur",
+            "pressure": "Wasserdruck",
+            "lastWaterTapVolume": "Letztes Wasserzapfvolumen",
+            "lastWaterTapDuration": "Dauer des letzten Wasserzapfens",
+            "totalWaterConsumptionToday": "Gesamtwasserverbrauch heute"
         }
         return fixed_names.get(self._sensor_type, f"Unbekannter Sensor ({self._sensor_type})")
 
