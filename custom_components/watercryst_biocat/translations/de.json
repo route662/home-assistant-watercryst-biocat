@@ -9,11 +9,11 @@
   },
   "entity": {
     "sensor": {
-      "waterTemp": "Wassertemperatur",
-      "pressure": "Wasserdruck",
-      "lastWaterTapVolume": "Letztes Wasserzapfvolumen",
-      "lastWaterTapDuration": "Dauer des letzten Wasserzapfens",
-      "totalWaterConsumptionToday": "Gesamtwasserverbrauch heute"
+      "water_temperature": "Wassertemperatur",
+      "water_pressure": "Wasserdruck",
+      "last_water_tap_volume": "Letztes Wasserzapfvolumen",
+      "last_water_tap_duration": "Dauer des letzten Wasserzapfens",
+      "total_water_consumption_today": "Gesamtwasserverbrauch heute"
     }
   }
 }

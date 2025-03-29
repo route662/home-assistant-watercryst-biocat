@@ -9,11 +9,11 @@
   },
   "entity": {
     "sensor": {
-      "waterTemp": "Water Temperature",
-      "pressure": "Water Pressure",
-      "lastWaterTapVolume": "Last Water Tap Volume",
-      "lastWaterTapDuration": "Last Water Tap Duration",
-      "totalWaterConsumptionToday": "Total Water Consumption Today"
+      "water_temperature": "Water Temperature",
+      "water_pressure": "Water Pressure",
+      "last_water_tap_volume": "Last Water Tap Volume",
+      "last_water_tap_duration": "Last Water Tap Duration",
+      "total_water_consumption_today": "Total Water Consumption Today"
     }
   }
 }
