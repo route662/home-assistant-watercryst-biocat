@@ -58,11 +58,6 @@ class WatercrystSensor(Entity):
         self._api_key = api_key
 
     @property
-    def name(self):
-        """Return the name of the sensor."""
-        return SENSORS[self._sensor_type]["name"]
-
-    @property
     def state(self):
         """Return the state of the sensor."""
         return self._value
