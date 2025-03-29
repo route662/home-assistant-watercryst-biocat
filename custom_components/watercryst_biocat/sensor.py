@@ -59,8 +59,15 @@ class WatercrystSensor(Entity):
 
     @property
     def name(self):
-        """Return None to let Home Assistant use translations."""
-        return None  # Home Assistant verwendet automatisch die Übersetzungen
+        """Return a fixed German name for the sensor."""
+        fixed_names = {
+            "water_temperature": "Wassertemperatur",
+            "water_pressure": "Wasserdruck",
+            "last_water_tap_volume": "Letztes Wasserzapfvolumen",
+            "last_water_tap_duration": "Dauer des letzten Wasserzapfens",
+            "total_water_consumption_today": "Gesamtwasserverbrauch heute"
+        }
+        return fixed_names.get(self._sensor_type, f"Unbekannter Sensor ({self._sensor_type})")
 
     @property
     def state(self):
@@ -80,6 +87,6 @@ class WatercrystSensor(Entity):
     async def async_update(self):
         """Fetch new data for the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._sensor_type)
-        data = await fetch_data(self._api_key)  # Abrufen der aktuellen Daten
+        data = await fetch_data(self._api_key)
         if data:
-            self._value = data.get(self._sensor_type, None)  # Aktualisieren des Werts
+            self._value = data.get(self._sensor_type, None)
