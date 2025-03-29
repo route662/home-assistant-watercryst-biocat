@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Watercryst Biocat API",
+        "description": "Please enter your API key."
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "waterTemp": "Water Temperature",
+      "pressure": "Water Pressure",
+      "lastWaterTapVolume": "Last Water Tap Volume",
+      "lastWaterTapDuration": "Last Water Tap Duration",
+      "totalWaterConsumptionToday": "Total Water Consumption Today"
+    }
+  }
+}

@@ -8,11 +8,11 @@ _LOGGER = logging.getLogger(__name__)  # Logger für die Integration
 
 API_URL = "https://appapi.watercryst.com/v1"
 SENSORS = {
-    "waterTemp": {"name": "Water Temperature", "unit": "°C"},
-    "pressure": {"name": "Water Pressure", "unit": "bar"},
-    "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L"},
-    "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s"},
-    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L"},
+    "waterTemp": {"name": "Water Temperature", "unit": "°C", "icon": "mdi:thermometer"},
+    "pressure": {"name": "Water Pressure", "unit": "bar", "icon": "mdi:gauge"},
+    "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L", "icon": "mdi:cup-water"},
+    "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s", "icon": "mdi:timer"},
+    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L", "icon": "mdi:water"}
 }
 
 
@@ -55,15 +55,12 @@ class WatercrystSensor(Entity):
         """Initialize the sensor."""
         self._sensor_type = sensor_type
         self._value = value
-        self._name = SENSORS[sensor_type]["name"]
-        self._unit = SENSORS[sensor_type]["unit"]
         self._api_key = api_key
-        _LOGGER.debug("Initialized sensor: %s with value: %s", self._name, self._value)
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"Biocat {self._name}"
+        return f"sensor.{self._sensor_type}"
 
     @property
     def state(self):
@@ -71,21 +68,11 @@ class WatercrystSensor(Entity):
         return self._value
 
     @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self._unit
-
-    @property
     def unique_id(self):
         """Return a unique ID for the sensor."""
         return f"{self._api_key}_{self._sensor_type}"
 
     @property
-    def device_info(self):
-        """Return device information for the sensor."""
-        return {
-            "identifiers": {(DOMAIN, self._api_key)},
-            "name": "Watercryst Biocat",
-            "manufacturer": "Watercryst",
-            "model": "Biocat",
-        }
+    def icon(self):
+        """Return the icon of the sensor."""
+        return SENSORS[self._sensor_type]["icon"]

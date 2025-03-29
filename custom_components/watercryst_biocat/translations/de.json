@@ -6,6 +6,15 @@
         "description": "Bitte API-Key eingeben."
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "waterTemp": "Wassertemperatur",
+      "pressure": "Wasserdruck",
+      "lastWaterTapVolume": "Letztes Wasserzapfvolumen",
+      "lastWaterTapDuration": "Dauer des letzten Wasserzapfens",
+      "totalWaterConsumptionToday": "Gesamtwasserverbrauch heute"
+    }
   }
 }
 
