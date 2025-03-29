@@ -58,6 +58,11 @@ class WatercrystSensor(Entity):
         self._api_key = api_key
 
     @property
+    def name(self):
+        """Return None to let Home Assistant use translations."""
+        return None  # Home Assistant verwendet automatisch die Übersetzungen
+
+    @property
     def state(self):
         """Return the state of the sensor."""
         return self._value
