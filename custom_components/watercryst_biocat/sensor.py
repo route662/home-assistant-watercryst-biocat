@@ -1,7 +1,8 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
 import aiohttp
 from . import DOMAIN
 
@@ -88,32 +89,41 @@ async def fetch_data(api_key):
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
-    data = await fetch_data(api_key)
 
-    if not data:
-        _LOGGER.error("No data received from API. Sensors will not be created.")
-        return
+    async def async_update_data():
+        """Fetch data from the API."""
+        return await fetch_data(api_key)
 
+    # Setze den Update-Intervall auf 60 Sekunden (kann angepasst werden)
+    coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name="Watercryst Biocat",
+        update_method=async_update_data,
+        update_interval=timedelta(seconds=60),  # Intervall hier anpassen
+    )
+
+    # Erste Aktualisierung durchführen
+    await coordinator.async_config_entry_first_refresh()
+
+    # Sensoren erstellen
     sensors = [
-        WatercrystSensor(sensor, data.get(sensor, None), api_key)
+        WatercrystSensor(coordinator, sensor)
         for sensor in SENSORS
     ]
-    _LOGGER.debug("Created sensors: %s", [sensor.name for sensor in sensors])
     async_add_entities(sensors)
 
 
-class WatercrystSensor(Entity):
+class WatercrystSensor(CoordinatorEntity, Entity):
     """Representation of a Watercryst Biocat sensor."""
 
-    def __init__(self, sensor_type, value, api_key):
+    def __init__(self, coordinator, sensor_type):
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._sensor_type = sensor_type
-        self._value = value
         self._name = SENSORS[sensor_type]["name"]
         self._unit = SENSORS[sensor_type]["unit"]
         self._icon = SENSORS[sensor_type]["icon"]
-        self._api_key = api_key
-        _LOGGER.debug("Initialized sensor: %s with value: %s", self._name, self._value)
 
     @property
     def name(self):
@@ -123,10 +133,7 @@ class WatercrystSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._sensor_type == "mlState":
-            # Übersetze den Wert "success" zu "Keine Leckage entdeckt"
-            return "Keine Leckage entdeckt" if self._value == "success" else self._value
-        return self._value
+        return self.coordinator.data.get(self._sensor_type)
 
     @property
     def unit_of_measurement(self):
@@ -137,18 +144,3 @@ class WatercrystSensor(Entity):
     def icon(self):
         """Return the icon for the sensor."""
         return self._icon
-
-    @property
-    def unique_id(self):
-        """Return a unique ID for the sensor."""
-        return f"{self._api_key}_{self._sensor_type}"
-
-    @property
-    def device_info(self):
-        """Return device information for the sensor."""
-        return {
-            "identifiers": {(DOMAIN, self._api_key)},
-            "name": "Watercryst Biocat",
-            "manufacturer": "Watercryst",
-            "model": "Biocat",
-        }
