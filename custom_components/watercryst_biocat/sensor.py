@@ -1,5 +1,6 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
+from datetime import datetime
 from homeassistant.helpers.entity import Entity
 import aiohttp
 from . import DOMAIN
@@ -13,7 +14,13 @@ SENSORS = {
     "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
     "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
     "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
-    "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"}  # Neuer Sensor
+    "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"},
+    "online": {"name": "Online-Status", "unit": None, "icon": "mdi:cloud-check"},
+    "eventTitle": {"name": "Ereignistitel", "unit": None, "icon": "mdi:alert-circle"},
+    "eventDescription": {"name": "Ereignisbeschreibung", "unit": None, "icon": "mdi:alert-circle-outline"},
+    "absenceModeEnabled": {"name": "Abwesenheitsmodus aktiviert", "unit": None, "icon": "mdi:shield-home"},
+    "pauseLeakageProtectionUntil": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
+    "mlState": {"name": "ML-Zustand", "unit": None, "icon": "mdi:robot"}
 }
 
 
@@ -34,8 +41,28 @@ async def fetch_data(api_key):
                 state_data = await response_state.json()
                 _LOGGER.debug("State API response: %s", state_data)
 
-                # Extrahiere den Zustand der Wasserzufuhr
+                # Extrahiere zusätzliche Daten
                 data["waterSupplyState"] = state_data.get("mode", {}).get("name", "Unbekannt")
+                data["online"] = state_data.get("online", False)
+                data["eventTitle"] = state_data.get("event", {}).get("title", "Kein Ereignis")
+                data["eventDescription"] = state_data.get("event", {}).get("description", "Keine Beschreibung")
+                data["absenceModeEnabled"] = state_data.get("waterProtection", {}).get("absenceModeEnabled", False)
+                data["pauseLeakageProtectionUntil"] = state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC", "Unbekannt")
+                data["mlState"] = state_data.get("mlState", "Unbekannt")
+
+            # Abrufen der Statistikdaten
+            async with session.get(f"{API_URL}/statistics", headers=headers) as response_stats:
+                response_stats.raise_for_status()
+                stats_data = await response_stats.json()
+                _LOGGER.debug("Statistics API response: %s", stats_data)
+
+                # Berechne den heutigen Wasserverbrauch
+                today = datetime.utcnow().date()
+                today_consumption = next(
+                    (entry["consumption"] for entry in stats_data.get("entries", []) if datetime.fromisoformat(entry["date"]).date() == today),
+                    0
+                )
+                data["totalWaterConsumptionToday"] = today_consumption
 
             return data
         except Exception as e:
