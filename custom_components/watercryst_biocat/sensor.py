@@ -8,11 +8,11 @@ _LOGGER = logging.getLogger(__name__)  # Logger für die Integration
 
 API_URL = "https://appapi.watercryst.com/v1"
 SENSORS = {
-    "waterTemp": {"name": "Water Temperature", "unit": "°C"},
-    "pressure": {"name": "Water Pressure", "unit": "bar"},
-    "lastWaterTapVolume": {"name": "Last Water Tap Volume", "unit": "L"},
-    "lastWaterTapDuration": {"name": "Last Water Tap Duration", "unit": "s"},
-    "totalWaterConsumptionToday": {"name": "Total Water Consumption Today", "unit": "L"},
+    "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
+    "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
+    "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
+    "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
+    "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
 }
 
 
@@ -57,6 +57,7 @@ class WatercrystSensor(Entity):
         self._value = value
         self._name = SENSORS[sensor_type]["name"]
         self._unit = SENSORS[sensor_type]["unit"]
+        self._icon = SENSORS[sensor_type]["icon"]
         self._api_key = api_key
         _LOGGER.debug("Initialized sensor: %s with value: %s", self._name, self._value)
 
@@ -74,6 +75,11 @@ class WatercrystSensor(Entity):
     def unit_of_measurement(self):
         """Return the unit of measurement."""
         return self._unit
+
+    @property
+    def icon(self):
+        """Return the icon for the sensor."""
+        return self._icon
 
     @property
     def unique_id(self):
