@@ -22,11 +22,22 @@ async def fetch_data(api_key):
     headers = {"accept": "application/json", "x-api-key": api_key}
     async with aiohttp.ClientSession() as session:
         try:
+            # Abrufen der Messdaten
             async with session.get(f"{API_URL}/measurements/direct", headers=headers) as response:
                 response.raise_for_status()
                 data = await response.json()
-                _LOGGER.debug("API response: %s", data)  # Log the API response
-                return data
+                _LOGGER.debug("Measurements API response: %s", data)
+
+            # Abrufen des Zustands der Wasserzufuhr
+            async with session.get(f"{API_URL}/state", headers=headers) as response_state:
+                response_state.raise_for_status()
+                state_data = await response_state.json()
+                _LOGGER.debug("State API response: %s", state_data)
+
+                # Extrahiere den Zustand der Wasserzufuhr
+                data["waterSupplyState"] = state_data.get("mode", {}).get("name", "Unbekannt")
+
+            return data
         except Exception as e:
             _LOGGER.error("Error fetching data from API: %s", e)
             return {}
