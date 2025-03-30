@@ -1,7 +1,6 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 import requests
 from . import DOMAIN
 
@@ -43,26 +42,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
     api_key = entry.data["api_key"]
 
-    async def async_update_data():
-        """Fetch data from the API."""
-        return await hass.async_add_executor_job(fetch_data, api_key)
+    data = await hass.async_add_executor_job(fetch_data, api_key)
 
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="Watercryst Biocat",
-        update_method=async_update_data,
-        update_interval=entry.options.get("update_interval", 60),
-    )
-
-    await coordinator.async_refresh()
-
-    if not coordinator.last_update_success:
+    if not data:
         _LOGGER.error("No data received from API. Sensors will not be created.")
         return
 
     sensors = [
-        WatercrystSensor(coordinator, sensor)
+        WatercrystSensor(None, sensor, api_key)
         for sensor in SENSORS
     ]
     _LOGGER.debug("Created sensors: %s", [sensor.name for sensor in sensors])
@@ -72,10 +59,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class WatercrystSensor(Entity):
     """Representation of a Watercryst Biocat sensor."""
 
-    def __init__(self, coordinator, sensor_type):
+    def __init__(self, coordinator, sensor_type, api_key):
         """Initialize the sensor."""
         self.coordinator = coordinator
         self._sensor_type = sensor_type
+        self._api_key = api_key
+        self._value = None
 
     @property
     def name(self):
@@ -85,12 +74,12 @@ class WatercrystSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.coordinator.data.get(self._sensor_type)
+        return self._value
 
     @property
     def unique_id(self):
         """Return a unique ID for the sensor."""
-        return f"{self.coordinator.api_key}_{self._sensor_type}"
+        return f"{self._api_key}_{self._sensor_type}"
 
     @property
     def icon(self):
@@ -100,8 +89,11 @@ class WatercrystSensor(Entity):
     @property
     def available(self):
         """Return if entity is available."""
-        return self.coordinator.last_update_success
+        return self._value is not None
 
     async def async_update(self):
-        """Update the sensor."""
-        await self.coordinator.async_request_refresh()
+        """Fetch new data for the sensor."""
+        _LOGGER.debug("Updating sensor: %s", self._sensor_type)
+        data = await fetch_data(self._api_key)  # Abrufen der aktuellen Daten
+        if data:
+            self._value = data.get(self._sensor_type, None)  # Aktualisieren des Werts
