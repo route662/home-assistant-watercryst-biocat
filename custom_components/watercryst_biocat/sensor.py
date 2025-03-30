@@ -21,12 +21,13 @@ SENSORS = {
     "eventDescription": {"name": "Ereignisbeschreibung", "unit": None, "icon": "mdi:alert-circle-outline"},
     "absenceModeEnabled": {"name": "Abwesenheitsmodus aktiviert", "unit": None, "icon": "mdi:shield-home"},
     "pauseLeakageProtectionUntil": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
-    "mlState": {"name": "ML-Zustand", "unit": None, "icon": "mdi:robot"}
+    "mlState": {"name": "Mikroleckagen-Zustand", "unit": None, "icon": "mdi:robot"}
 }
 
 
 async def fetch_data(api_key):
     """Get data from the Watercryst Biocat API asynchronously."""
+    _LOGGER.debug("Fetching data from API...")
     headers = {"accept": "application/json", "x-api-key": api_key}
     async with aiohttp.ClientSession() as session:
         try:
@@ -109,6 +110,9 @@ class WatercrystSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
+        if self._sensor_type == "mlState":
+            # Übersetze den Wert "success" zu "Keine Leckage entdeckt"
+            return "Keine Leckage entdeckt" if self._value == "success" else self._value
         return self._value
 
     @property
