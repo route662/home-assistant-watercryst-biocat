@@ -14,6 +14,7 @@ SENSORS = {
     "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
     "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
     "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
+    "cumulativeWaterConsumption": {"name": "Kumulativer Wasserverbrauch", "unit": "L", "icon": "mdi:chart-bar"},  # Neuer Sensor
     "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"},
     "online": {"name": "Online-Status", "unit": None, "icon": "mdi:cloud-check"},
     "eventTitle": {"name": "Ereignistitel", "unit": None, "icon": "mdi:alert-circle"},
@@ -51,7 +52,7 @@ async def fetch_data(api_key):
                 data["mlState"] = state_data.get("mlState", "Unbekannt")
 
             # Abrufen der Statistikdaten
-            async with session.get(f"{API_URL}/statistics", headers=headers) as response_stats:
+            async with session.get(f"{API_URL}/statistics/daily/direct", headers=headers) as response_stats:
                 response_stats.raise_for_status()
                 stats_data = await response_stats.json()
                 _LOGGER.debug("Statistics API response: %s", stats_data)
