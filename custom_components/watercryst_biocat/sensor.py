@@ -66,6 +66,19 @@ async def fetch_data(api_key):
                 )
                 data["totalWaterConsumptionToday"] = today_consumption
 
+            # Abrufen der kumulativen Statistikdaten
+            async with session.get(f"{API_URL}/statistics/cumulative/daily", headers=headers) as response_cumulative:
+                response_cumulative.raise_for_status()
+                cumulative_data = await response_cumulative.json()
+                _LOGGER.debug("Cumulative Statistics API response: %s", cumulative_data)
+
+                # Konvertiere den kumulativen Wasserverbrauch in eine Zahl
+                try:
+                    data["cumulativeWaterConsumption"] = float(str(cumulative_data).replace(",", "."))
+                except ValueError:
+                    _LOGGER.error("Failed to parse cumulative water consumption: %s", cumulative_data)
+                    data["cumulativeWaterConsumption"] = 0
+
             return data
         except Exception as e:
             _LOGGER.error("Error fetching data from API: %s", e)
