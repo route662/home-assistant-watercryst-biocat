@@ -1,10 +1,13 @@
 """Watercryst Biocat Integration."""
+import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from datetime import timedelta
 
 DOMAIN = "watercryst_biocat"
+
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Watercryst Biocat from a config entry."""
@@ -13,7 +16,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Erstelle einen DataUpdateCoordinator
     async def async_update_data():
         """Fetch data from the API."""
-        from .sensor import fetch_data  # Importiere die fetch_data-Funktion
+        from .sensor import fetch_data
         return await fetch_data(entry.data["api_key"])
 
     coordinator = DataUpdateCoordinator(
@@ -24,8 +27,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         update_interval=timedelta(seconds=60),  # Aktualisierungsintervall auf 60 Sekunden setzen
     )
 
-    # Erste Aktualisierung durchführen
-    await coordinator.async_config_entry_first_refresh()
+    try:
+        # Erste Aktualisierung durchführen
+        await coordinator.async_config_entry_first_refresh()
+    except Exception as e:
+        _LOGGER.error("Failed to fetch initial data: %s", e)
+        return False
 
     # Speichere den Coordinator
     hass.data[DOMAIN][entry.entry_id] = coordinator

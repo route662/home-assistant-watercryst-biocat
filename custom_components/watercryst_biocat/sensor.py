@@ -15,7 +15,7 @@ SENSORS = {
     "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
     "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
     "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
-    "cumulativeWaterConsumption": {"name": "Kumulativer Wasserverbrauch", "unit": "L", "icon": "mdi:chart-bar"},  # Neuer Sensor
+    "cumulativeWaterConsumption": {"name": "Kumulativer Wasserverbrauch", "unit": "L", "icon": "mdi:chart-bar"},
     "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"},
     "online": {"name": "Online-Status", "unit": None, "icon": "mdi:cloud-check"},
     "eventTitle": {"name": "Ereignistitel", "unit": None, "icon": "mdi:alert-circle"},
@@ -30,7 +30,9 @@ async def fetch_data(api_key):
     """Get data from the Watercryst Biocat API asynchronously."""
     _LOGGER.debug("Fetching data from API...")
     headers = {"accept": "application/json", "x-api-key": api_key}
-    async with aiohttp.ClientSession() as session:
+    timeout = aiohttp.ClientTimeout(total=30)  # Timeout auf 30 Sekunden setzen
+
+    async with aiohttp.ClientSession(timeout=timeout) as session:
         try:
             # Abrufen der Messdaten
             async with session.get(f"{API_URL}/measurements/direct", headers=headers) as response:
