@@ -1,14 +1,13 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
-from datetime import datetime, timedelta
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
 import aiohttp
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import Entity
 from . import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)  # Logger für die Integration
+_LOGGER = logging.getLogger(__name__)
 
-API_URL = "https://appapi.watercryst.com/v1"
+# Definition der verfügbaren Sensoren
 SENSORS = {
     "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
     "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
@@ -22,99 +21,36 @@ SENSORS = {
     "eventDescription": {"name": "Ereignisbeschreibung", "unit": None, "icon": "mdi:alert-circle-outline"},
     "absenceModeEnabled": {"name": "Abwesenheitsmodus aktiviert", "unit": None, "icon": "mdi:shield-home"},
     "pauseLeakageProtectionUntil": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
-    "mlState": {"name": "Mikroleckagen-Zustand", "unit": None, "icon": "mdi:robot"}
+    "mlState": {"name": "Mikroleckagen-Zustand", "unit": None, "icon": "mdi:robot"},
 }
-
-
-async def fetch_data(api_key):
-    """Get data from the Watercryst Biocat API asynchronously."""
-    _LOGGER.debug("Fetching data from API...")
-    headers = {"accept": "application/json", "x-api-key": api_key}
-    timeout = aiohttp.ClientTimeout(total=30)  # Timeout auf 30 Sekunden setzen
-
-    async with aiohttp.ClientSession(timeout=timeout) as session:
-        try:
-            # Abrufen der Messdaten
-            async with session.get(f"{API_URL}/measurements/direct", headers=headers) as response:
-                response.raise_for_status()
-                data = await response.json()
-                _LOGGER.debug("Measurements API response: %s", data)
-
-            # Abrufen des Zustands der Wasserzufuhr
-            async with session.get(f"{API_URL}/state", headers=headers) as response_state:
-                response_state.raise_for_status()
-                state_data = await response_state.json()
-                _LOGGER.debug("State API response: %s", state_data)
-
-                # Extrahiere zusätzliche Daten
-                data["waterSupplyState"] = state_data.get("mode", {}).get("name", "Unbekannt")
-                data["online"] = state_data.get("online", False)
-                data["eventTitle"] = state_data.get("event", {}).get("title", "Kein Ereignis")
-                data["eventDescription"] = state_data.get("event", {}).get("description", "Keine Beschreibung")
-                data["absenceModeEnabled"] = state_data.get("waterProtection", {}).get("absenceModeEnabled", False)
-                data["pauseLeakageProtectionUntil"] = state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC", "Unbekannt")
-                data["mlState"] = state_data.get("mlState", "Unbekannt")
-
-            # Abrufen der Statistikdaten
-            async with session.get(f"{API_URL}/statistics/daily/direct", headers=headers) as response_stats:
-                response_stats.raise_for_status()
-                stats_data = await response_stats.json()
-                _LOGGER.debug("Statistics API response: %s", stats_data)
-
-                # Berechne den heutigen Wasserverbrauch
-                today = datetime.utcnow().date()
-                today_consumption = next(
-                    (entry["consumption"] for entry in stats_data.get("entries", []) if datetime.fromisoformat(entry["date"]).date() == today),
-                    0
-                )
-                data["totalWaterConsumptionToday"] = today_consumption
-
-            # Abrufen der kumulativen Statistikdaten
-            async with session.get(f"{API_URL}/statistics/cumulative/daily", headers=headers) as response_cumulative:
-                response_cumulative.raise_for_status()
-                cumulative_data = await response_cumulative.json()
-                _LOGGER.debug("Cumulative Statistics API response: %s", cumulative_data)
-
-                # Konvertiere den kumulativen Wasserverbrauch in eine Zahl
-                try:
-                    data["cumulativeWaterConsumption"] = float(str(cumulative_data).replace(",", "."))
-                except ValueError:
-                    _LOGGER.error("Failed to parse cumulative water consumption: %s", cumulative_data)
-                    data["cumulativeWaterConsumption"] = 0
-
-            return data
-        except Exception as e:
-            _LOGGER.error("Error fetching data from API: %s", e)
-            return {}
-
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
-    api_key = entry.data["api_key"]
+    # Hole den DataUpdateCoordinator aus der Integration
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
-    async def async_update_data():
-        """Fetch data from the API."""
-        return await fetch_data(api_key)
-
-    # Setze den Update-Intervall auf 60 Sekunden (kann angepasst werden)
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="Watercryst Biocat",
-        update_method=async_update_data,
-        update_interval=timedelta(seconds=60),  # Intervall hier anpassen
-    )
-
-    # Erste Aktualisierung durchführen
-    await coordinator.async_config_entry_first_refresh()
-
-    # Sensoren erstellen
+    # Erstelle Sensoren basierend auf den definierten SENSORS
     sensors = [
-        WatercrystSensor(coordinator, sensor)
-        for sensor in SENSORS
+        WatercrystSensor(coordinator, sensor_type)
+        for sensor_type in SENSORS
     ]
     async_add_entities(sensors)
 
+async def fetch_data(api_key):
+    """Fetch data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
+    url = "https://appapi.watercryst.com/v1/measurements/direct"
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()
+                _LOGGER.debug("Fetched data from API: %s", data)
+                return data
+        except Exception as e:
+            _LOGGER.error("Error fetching data from API: %s", e)
+            return {}
 
 class WatercrystSensor(CoordinatorEntity, Entity):
     """Representation of a Watercryst Biocat sensor."""
