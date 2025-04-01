@@ -15,7 +15,7 @@ class WatercrystBiocatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # Validierung des API-Schlüssels (optional)
             api_key = user_input["api_key"]
-            if not api_key oder len(api_key) < 10:  # Beispielvalidierung
+            if not api_key or len(api_key) < 10:  # Beispielvalidierung
                 errors["api_key"] = "invalid_api_key"
             else:
                 # Speichere die Konfiguration
@@ -35,7 +35,7 @@ class WatercrystBiocatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required("api_key"): str,
                 vol.Optional("scan_interval", default=default_scan_interval): vol.All(
-                    vol.Coerce(int), vol.Range(min=10, max=3600)
+                    vol.Coerce(int), vol.Range(min=10, max3600)
                 ),
             }
         )
