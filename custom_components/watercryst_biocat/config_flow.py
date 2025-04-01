@@ -15,7 +15,7 @@ class WatercrystBiocatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # Validierung des API-Schlüssels (optional)
             api_key = user_input["api_key"]
-            if not api_key or len(api_key) < 10:  # Beispielvalidierung
+            if not api_key oder len(api_key) < 10:  # Beispielvalidierung
                 errors["api_key"] = "invalid_api_key"
             else:
                 # Speichere die Konfiguration
@@ -28,7 +28,7 @@ class WatercrystBiocatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
         # Standardwerte für das Formular
-        default_scan_interval = 60  # Standardintervall in Sekunden
+        default_scan_interval = 10  # Standardintervall in Sekunden
 
         # Formulardefinition
         data_schema = vol.Schema(
@@ -43,4 +43,3 @@ class WatercrystBiocatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=data_schema, errors=errors
         )
-
