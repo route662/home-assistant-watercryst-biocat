@@ -13,8 +13,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Watercryst Biocat from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Lese den API-Schlüssel aus der Konfiguration
+    # Lese den API-Schlüssel und das Abfrageintervall aus der Konfiguration
     api_key = entry.data["api_key"]
+    scan_interval = entry.data.get("scan_interval", 10)  # Standardwert auf 10 Sekunden setzen
 
     # Erstelle einen DataUpdateCoordinator
     async def async_update_data():
@@ -29,7 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER,
         name="Watercryst Biocat",
         update_method=async_update_data,
-        update_interval=timedelta(seconds=60),  # Aktualisierungsintervall auf 60 Sekunden setzen
+        update_interval=timedelta(seconds=scan_interval),  # Aktualisierungsintervall verwenden
     )
 
     # Erste Aktualisierung durchführen
