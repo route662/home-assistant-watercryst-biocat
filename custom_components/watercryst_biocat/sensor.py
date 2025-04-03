@@ -9,20 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # Definition der verfügbaren Sensoren
 SENSORS = {
-    "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
-    "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
-    "flowRate": {"name": "Durchflussrate", "unit": "L/min", "icon": "mdi:water"},
-    "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
-    "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
-    "totalWaterConsumptionToday": {"name": "Gesamtwasserverbrauch heute", "unit": "L", "icon": "mdi:water"},
     "cumulativeWaterConsumption": {"name": "Kumulativer Wasserverbrauch", "unit": "L", "icon": "mdi:chart-bar"},
-    "waterSupplyState": {"name": "Zustand der Wasserzufuhr", "unit": None, "icon": "mdi:water-pump"},
-    "online": {"name": "Online-Status", "unit": None, "icon": "mdi:cloud-check"},
-    "eventTitle": {"name": "Ereignistitel", "unit": None, "icon": "mdi:alert-circle"},
-    "eventDescription": {"name": "Ereignisbeschreibung", "unit": None, "icon": "mdi:alert-circle-outline"},
-    "absenceModeEnabled": {"name": "Abwesenheitsmodus aktiviert", "unit": None, "icon": "mdi:shield-home"},
-    "pauseLeakageProtectionUntil": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
-    "mlState": {"name": "Mikroleckagen-Zustand", "unit": None, "icon": "mdi:robot"},
 }
 
 async def fetch_data(api_key):
