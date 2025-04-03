@@ -45,25 +45,29 @@ async def async_update_data():
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
+    _LOGGER.debug("Setting up sensors for Watercryst Biocat...")
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     # Erstelle Sensoren basierend auf den definierten SENSORS
     sensors = [
-        WatercrystSensor(coordinator, sensor_type)
+        WatercrystSensor(coordinator, sensor_type, entry.entry_id)
         for sensor_type in SENSORS
     ]
+    _LOGGER.debug("Sensors created: %s", [sensor._name for sensor in sensors])
     async_add_entities(sensors)
+    _LOGGER.debug("Sensors added to Home Assistant.")
 
-class WatercrystSensor(CoordinatorEntity, Entity):
+class WatercrystSensor(CoordinatorEntity):
     """Representation of a Watercryst Biocat sensor."""
 
-    def __init__(self, coordinator, sensor_type):
+    def __init__(self, coordinator, sensor_type, entry_id):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._sensor_type = sensor_type
         self._name = SENSORS[sensor_type]["name"]
         self._unit = SENSORS[sensor_type]["unit"]
         self._icon = SENSORS[sensor_type]["icon"]
+        self._entry_id = entry_id  # Speichere die Konfigurations-ID
 
     @property
     def name(self):
@@ -84,3 +88,25 @@ class WatercrystSensor(CoordinatorEntity, Entity):
     def icon(self):
         """Return the icon for the sensor."""
         return self._icon
+
+    @property
+    def available(self):
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
+
+    @property
+    def unique_id(self):
+        """Return a unique ID for the sensor."""
+        return f"{self._entry_id}_{self._sensor_type}"
+
+    @property
+    def device_info(self):
+        """Return device information for the sensor."""
+        return {
+            "identifiers": {(DOMAIN, self._entry_id)},
+            "name": "Watercryst Biocat",
+            "manufacturer": "Watercryst",
+            "model": "Biocat",
+            "sw_version": "1.4.4",
+            "entry_type": "service",  # Optional: Markiert es als Dienstgerät
+        }
