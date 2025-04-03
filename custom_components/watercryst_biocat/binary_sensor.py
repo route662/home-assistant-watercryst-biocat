@@ -1,25 +1,25 @@
 """Binary sensor for Biocat Online & Protection modes."""
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from .sensor import fetch_data
-
+from . import DOMAIN
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up binary sensors."""
-    api_key = entry.data["api_key"]
-    data = fetch_data(api_key)
-    async_add_entities([
-        WatercrystBinarySensor("Biocat Online", data.get("online", False)),
-        WatercrystBinarySensor("Microleakage Protection", data.get("waterProtection", {}).get("absenceModeEnabled", False))
-    ])
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
+    # Erstelle binäre Sensoren
+    async_add_entities([
+        WatercrystBinarySensor(coordinator, "online", "Biocat Online"),
+        WatercrystBinarySensor(coordinator, "absenceModeEnabled", "Abwesenheitsmodus aktiviert"),
+    ])
 
 class WatercrystBinarySensor(BinarySensorEntity):
     """Representation of a Watercryst Biocat binary sensor."""
 
-    def __init__(self, name, state):
+    def __init__(self, coordinator, sensor_type, name):
         """Initialize the binary sensor."""
+        self._coordinator = coordinator
+        self._sensor_type = sensor_type
         self._name = name
-        self._state = state
 
     @property
     def name(self):
@@ -29,5 +29,10 @@ class WatercrystBinarySensor(BinarySensorEntity):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._state
+        return self._coordinator.data.get(self._sensor_type, False)
+
+    @property
+    def available(self):
+        """Return if entity is available."""
+        return self._coordinator.last_update_success
 
