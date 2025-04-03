@@ -1,11 +1,13 @@
 """Sensor handling for Watercryst Biocat."""
 import logging
+import aiohttp
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import Entity
 from . import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# Definition der verfügbaren Sensoren
 SENSORS = {
     "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
     "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
@@ -22,6 +24,22 @@ SENSORS = {
     "pauseLeakageProtectionUntil": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
     "mlState": {"name": "Mikroleckagen-Zustand", "unit": None, "icon": "mdi:robot"},
 }
+
+async def fetch_data(api_key):
+    """Fetch data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
+    url = "https://appapi.watercryst.com/v1/measurements/direct"
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()
+                _LOGGER.debug("Fetched data from API: %s", data)
+                return data
+        except Exception as e:
+            _LOGGER.error("Error fetching data from API: %s", e)
+            return {}
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat sensors."""
