@@ -12,6 +12,14 @@ SENSORS = {
     "cumulativeWaterConsumption": {"name": "Kumulativer Wasserverbrauch", "unit": "L", "icon": "mdi:chart-bar"},
 }
 
+SENSORS.update({
+    "online": {"name": "Online-Status", "unit": None, "icon": "mdi:cloud-check"},
+    "mode": {"name": "Modus", "unit": None, "icon": "mdi:water"},
+    "mlState": {"name": "Mikroleckageschutz-Zustand", "unit": None, "icon": "mdi:robot"},
+    "absenceModeEnabled": {"name": "Abwesenheitsmodus aktiviert", "unit": None, "icon": "mdi:shield-home"},
+    "pauseLeakageProtectionUntilUTC": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
+})
+
 async def fetch_data(api_key):
     """Fetch data from the Watercryst Biocat API."""
     headers = {"accept": "application/json", "x-api-key": api_key}
@@ -32,15 +40,46 @@ async def fetch_data(api_key):
             _LOGGER.error("Unexpected error: %s", e)
             return None
 
+async def fetch_state_data(api_key):
+    """Fetch state data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
+    url = "https://appapi.watercryst.com/v1/state"
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            _LOGGER.debug("Sending request to API: %s", url)
+            async with session.get(url, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()  # API gibt JSON zurück
+                _LOGGER.debug("Fetched state data from API: %s", data)
+                return data
+        except aiohttp.ClientResponseError as e:
+            _LOGGER.error("Error fetching state data from API: %s, status: %s, url: %s", e.message, e.status, e.request_info.url)
+            return None
+        except Exception as e:
+            _LOGGER.error("Unexpected error: %s", e)
+            return None
+
 async def async_update_data():
     """Fetch data from the API."""
-    from .sensor import fetch_data
+    from .sensor import fetch_data, fetch_state_data
     _LOGGER.debug("Starting data update...")
-    data = await fetch_data(api_key)
-    if data is not None:
-        _LOGGER.debug("Data fetched successfully: %s", data)
-        return {"cumulativeWaterConsumption": data}
-    _LOGGER.warning("No data fetched from API.")
+
+    # Abrufen der Daten von beiden APIs
+    cumulative_data = await fetch_data(api_key)
+    state_data = await fetch_state_data(api_key)
+
+    if cumulative_data is not None and state_data is not None:
+        _LOGGER.debug("Data fetched successfully: cumulative=%s, state=%s", cumulative_data, state_data)
+        return {
+            "cumulativeWaterConsumption": cumulative_data,
+            "online": state_data.get("online"),
+            "mode": state_data.get("mode", {}).get("name"),
+            "mlState": state_data.get("mlState"),
+            "absenceModeEnabled": state_data.get("waterProtection", {}).get("absenceModeEnabled"),
+            "pauseLeakageProtectionUntilUTC": state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC"),
+        }
+    _LOGGER.warning("Failed to fetch data from one or both APIs.")
     return {}
 
 async def async_setup_entry(hass, entry, async_add_entities):
