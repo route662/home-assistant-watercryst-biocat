@@ -175,7 +175,7 @@ class WatercrystSensor(CoordinatorEntity):
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        if self._sensor_type == "cumulativeWaterConsumption":
+        if self._sensor_type in ["cumulativeWaterConsumption", "dailyWaterConsumption", "weeklyWaterConsumption", "monthlyWaterConsumption"]:
             return "water"
         return None
 
@@ -184,16 +184,6 @@ class WatercrystSensor(CoordinatorEntity):
         """Return the state class of the sensor."""
         if self._sensor_type == "cumulativeWaterConsumption":
             return "total_increasing"
+        if self._sensor_type in ["dailyWaterConsumption", "weeklyWaterConsumption", "monthlyWaterConsumption"]:
+            return "total"
         return None
-
-    @property
-    def device_info(self):
-        """Return device information for the sensor."""
-        return {
-            "identifiers": {(DOMAIN, self._entry_id)},
-            "name": "Watercryst Biocat",
-            "manufacturer": "Watercryst",
-            "model": "Biocat",
-            "sw_version": "1.4.4",
-            "entry_type": "service",  # Optional: Markiert es als Dienstgerät
-        }
