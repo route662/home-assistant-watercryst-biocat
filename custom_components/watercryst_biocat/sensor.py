@@ -167,6 +167,20 @@ class WatercrystSensor(CoordinatorEntity):
         return f"{self._entry_id}_{self._sensor_type}"
 
     @property
+    def device_class(self):
+        """Return the device class of the sensor."""
+        if self._sensor_type == "cumulativeWaterConsumption":
+            return "water"
+        return None
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        if self._sensor_type == "cumulativeWaterConsumption":
+            return "total_increasing"
+        return None
+
+    @property
     def device_info(self):
         """Return device information for the sensor."""
         return {

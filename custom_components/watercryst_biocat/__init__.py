@@ -54,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER,
         name="Watercryst Biocat",
         update_method=async_update_data,
-        update_interval=timedelta(seconds=60),  # Aktualisierungsintervall auf 60 Sekunden setzen
+        update_interval=timedelta(seconds=30),  # Aktualisierungsintervall auf 60 Sekunden setzen
     )
 
     # Erste Aktualisierung durchführen
