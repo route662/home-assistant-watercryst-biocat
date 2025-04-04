@@ -194,6 +194,14 @@ class WatercrystSensor(CoordinatorEntity):
             "name": "Watercryst Biocat",
             "manufacturer": "Watercryst",
             "model": "Biocat",
-            "sw_version": "1.5.4",
+            "sw_version": "1.5.5",
             "entry_type": "service",  # Optional: Markiert es als Dienstgerät
         }
+
+    @property
+    def extra_state_attributes(self):
+        """Return extra attributes for the sensor."""
+        attributes = {}
+        if self._sensor_type == "cumulativeWaterConsumption":
+            attributes["state_class"] = "total_increasing"
+        return attributes
