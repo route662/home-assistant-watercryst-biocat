@@ -20,6 +20,14 @@ SENSORS.update({
     "pauseLeakageProtectionUntilUTC": {"name": "Leckageschutz pausiert bis", "unit": None, "icon": "mdi:clock-outline"},
 })
 
+SENSORS.update({
+    "waterTemp": {"name": "Wassertemperatur", "unit": "°C", "icon": "mdi:thermometer"},
+    "pressure": {"name": "Wasserdruck", "unit": "bar", "icon": "mdi:gauge"},
+    "flowRate": {"name": "Durchflussrate", "unit": "L/min", "icon": "mdi:water"},
+    "lastWaterTapVolume": {"name": "Letztes Wasserzapfvolumen", "unit": "L", "icon": "mdi:cup-water"},
+    "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
+})
+
 async def fetch_data(api_key):
     """Fetch data from the Watercryst Biocat API."""
     headers = {"accept": "application/json", "x-api-key": api_key}
@@ -55,6 +63,26 @@ async def fetch_state_data(api_key):
                 return data
         except aiohttp.ClientResponseError as e:
             _LOGGER.error("Error fetching state data from API: %s, status: %s, url: %s", e.message, e.status, e.request_info.url)
+            return None
+        except Exception as e:
+            _LOGGER.error("Unexpected error: %s", e)
+            return None
+
+async def fetch_measurements_data(api_key):
+    """Fetch measurement data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
+    url = "https://appapi.watercryst.com/v1/measurements/direct"
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            _LOGGER.debug("Sending request to API: %s", url)
+            async with session.get(url, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()  # API gibt JSON zurück
+                _LOGGER.debug("Fetched measurement data from API: %s", data)
+                return data
+        except aiohttp.ClientResponseError as e:
+            _LOGGER.error("Error fetching measurement data from API: %s, status: %s, url: %s", e.message, e.status, e.request_info.url)
             return None
         except Exception as e:
             _LOGGER.error("Unexpected error: %s", e)

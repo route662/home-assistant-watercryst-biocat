@@ -20,17 +20,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Erstelle einen DataUpdateCoordinator
     async def async_update_data():
         """Fetch data from the API."""
-        from .sensor import fetch_data, fetch_state_data
+        from .sensor import fetch_data, fetch_state_data, fetch_measurements_data
         _LOGGER.debug("Starting data update...")
 
-        # Abrufen der Daten von beiden APIs
-        _LOGGER.debug("Fetching cumulative data...")
+        # Abrufen der Daten von allen APIs
         cumulative_data = await fetch_data(api_key)
-        _LOGGER.debug("Fetching state data...")
         state_data = await fetch_state_data(api_key)
+        measurements_data = await fetch_measurements_data(api_key)
 
-        if cumulative_data is not None and state_data is not None:
-            _LOGGER.debug("Data fetched successfully: cumulative=%s, state=%s", cumulative_data, state_data)
+        if cumulative_data is not None and state_data is not None and measurements_data is not None:
+            _LOGGER.debug(
+                "Data fetched successfully: cumulative=%s, state=%s, measurements=%s",
+                cumulative_data, state_data, measurements_data
+            )
             return {
                 "cumulativeWaterConsumption": cumulative_data,
                 "online": state_data.get("online"),
@@ -38,8 +40,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 "mlState": state_data.get("mlState"),
                 "absenceModeEnabled": state_data.get("waterProtection", {}).get("absenceModeEnabled"),
                 "pauseLeakageProtectionUntilUTC": state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC"),
+                "waterTemp": measurements_data.get("waterTemp"),
+                "pressure": measurements_data.get("pressure"),
+                "flowRate": measurements_data.get("flowRate"),
+                "lastWaterTapVolume": measurements_data.get("lastWaterTapVolume"),
+                "lastWaterTapDuration": measurements_data.get("lastWaterTapDuration"),
             }
-        _LOGGER.warning("Failed to fetch data from one or both APIs.")
+        _LOGGER.warning("Failed to fetch data from one or more APIs.")
         return {}
 
     coordinator = DataUpdateCoordinator(
