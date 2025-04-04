@@ -4,11 +4,21 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 DOMAIN = "watercryst_biocat"
 
 _LOGGER = logging.getLogger(__name__)
+
+# Globale Variablen für die Berechnung
+last_cumulative_value = None
+daily_reset_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+weekly_reset_time = daily_reset_time - timedelta(days=daily_reset_time.weekday())
+monthly_reset_time = daily_reset_time.replace(day=1)
+
+daily_consumption = 0
+weekly_consumption = 0
+monthly_consumption = 0
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Watercryst Biocat from a config entry."""
@@ -21,6 +31,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def async_update_data():
         """Fetch data from the API."""
         from .sensor import fetch_data, fetch_state_data, fetch_measurements_data
+        global last_cumulative_value, daily_reset_time, weekly_reset_time, monthly_reset_time
+        global daily_consumption, weekly_consumption, monthly_consumption
+
         _LOGGER.debug("Starting data update...")
 
         # Abrufen der Daten von allen APIs
@@ -33,8 +46,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 "Data fetched successfully: cumulative=%s, state=%s, measurements=%s",
                 cumulative_data, state_data, measurements_data
             )
+
+            # Berechnung des täglichen, wöchentlichen und monatlichen Verbrauchs
+            now = datetime.now()
+            if now >= daily_reset_time + timedelta(days=1):
+                daily_reset_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                daily_consumption = 0
+
+            if now >= weekly_reset_time + timedelta(weeks=1):
+                weekly_reset_time = daily_reset_time - timedelta(days=daily_reset_time.weekday())
+                weekly_consumption = 0
+
+            if now >= monthly_reset_time + timedelta(days=31):
+                monthly_reset_time = now.replace(day=1)
+                monthly_consumption = 0
+
+            if last_cumulative_value is not None:
+                delta = cumulative_data - last_cumulative_value
+                daily_consumption += delta
+                weekly_consumption += delta
+                monthly_consumption += delta
+
+            last_cumulative_value = cumulative_data
+
             return {
                 "cumulativeWaterConsumption": cumulative_data,
+                "dailyWaterConsumption": daily_consumption,
+                "weeklyWaterConsumption": weekly_consumption,
+                "monthlyWaterConsumption": monthly_consumption,
                 "online": state_data.get("online"),
                 "mode": state_data.get("mode", {}).get("name"),
                 "mlState": state_data.get("mlState"),
