@@ -20,10 +20,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Erstelle einen DataUpdateCoordinator
     async def async_update_data():
         """Fetch data from the API."""
-        from .sensor import fetch_data
-        data = await fetch_data(api_key)
-        if data is not None:
-            return {"cumulativeWaterConsumption": data}
+        from .sensor import fetch_data, fetch_state_data
+        _LOGGER.debug("Starting data update...")
+
+        # Abrufen der Daten von beiden APIs
+        _LOGGER.debug("Fetching cumulative data...")
+        cumulative_data = await fetch_data(api_key)
+        _LOGGER.debug("Fetching state data...")
+        state_data = await fetch_state_data(api_key)
+
+        if cumulative_data is not None and state_data is not None:
+            _LOGGER.debug("Data fetched successfully: cumulative=%s, state=%s", cumulative_data, state_data)
+            return {
+                "cumulativeWaterConsumption": cumulative_data,
+                "online": state_data.get("online"),
+                "mode": state_data.get("mode", {}).get("name"),
+                "mlState": state_data.get("mlState"),
+                "absenceModeEnabled": state_data.get("waterProtection", {}).get("absenceModeEnabled"),
+                "pauseLeakageProtectionUntilUTC": state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC"),
+            }
+        _LOGGER.warning("Failed to fetch data from one or both APIs.")
         return {}
 
     coordinator = DataUpdateCoordinator(
@@ -65,6 +81,26 @@ async def fetch_data(api_key):
                 return float(data)  # Konvertiere den Wert in eine Zahl
         except aiohttp.ClientResponseError as e:
             _LOGGER.error("Error fetching data from API: %s, status: %s, url: %s", e.message, e.status, e.request_info.url)
+            return None
+        except Exception as e:
+            _LOGGER.error("Unexpected error: %s", e)
+            return None
+
+async def fetch_state_data(api_key):
+    """Fetch state data from the Watercryst Biocat API."""
+    headers = {"accept": "application/json", "x-api-key": api_key}
+    url = "https://appapi.watercryst.com/v1/state"
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            _LOGGER.debug("Sending request to API: %s", url)
+            async with session.get(url, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()  # API gibt JSON zurück
+                _LOGGER.debug("Fetched state data from API: %s", data)
+                return data
+        except aiohttp.ClientResponseError as e:
+            _LOGGER.error("Error fetching state data from API: %s, status: %s, url: %s", e.message, e.status, e.request_info.url)
             return None
         except Exception as e:
             _LOGGER.error("Unexpected error: %s", e)
