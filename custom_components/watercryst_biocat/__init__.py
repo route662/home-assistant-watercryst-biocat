@@ -39,22 +39,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.services.async_register(DOMAIN, "ack_event", handle_ack_event)
 
-    # Lese den API-Schlüssel aus der Konfiguration
-    api_key = entry.data["api_key"]
-
-    # Erstelle einen DataUpdateCoordinator
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="Watercryst Biocat",
-        update_method=lambda: async_update_data(api_key),
-        update_interval=timedelta(seconds=30),
-    )
-
-    await coordinator.async_config_entry_first_refresh()
-
-    hass.data[DOMAIN][entry.entry_id] = coordinator
-
     # Weiterleitung an die Plattformen
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "switch", "button"])
     return True
