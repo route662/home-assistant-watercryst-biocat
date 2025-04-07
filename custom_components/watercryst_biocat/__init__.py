@@ -32,7 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass,
         _LOGGER,
         name="Watercryst Biocat",
-        update_method=async_update_data,
+        update_method=lambda: async_update_data(entry.data["api_key"]),
         update_interval=timedelta(seconds=30),
     )
 
@@ -51,7 +51,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     return unload_ok
 
-async def async_update_data():
+async def async_update_data(api_key):
     """Fetch data from the API."""
     from .sensor import fetch_data, fetch_state_data, fetch_measurements_data
     global last_cumulative_value, daily_reset_time, weekly_reset_time, monthly_reset_time

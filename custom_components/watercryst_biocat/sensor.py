@@ -88,7 +88,7 @@ async def fetch_measurements_data(api_key):
             _LOGGER.error("Unexpected error: %s", e)
             return None
 
-async def async_update_data():
+async def async_update_data(api_key):
     """Fetch data from the API."""
     from .sensor import fetch_data, fetch_state_data
     _LOGGER.debug("Starting data update...")
@@ -188,7 +188,7 @@ class WatercrystSensor(CoordinatorEntity):
             "name": "Watercryst Biocat",
             "manufacturer": "Watercryst",
             "model": "Biocat",
-            "sw_version": "1.5.6",
+            "sw_version": "1.5.7",
             "entry_type": "service",  # Optional: Markiert es als Dienstgerät
         }
 
