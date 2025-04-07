@@ -28,82 +28,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     api_key = entry.data["api_key"]
 
     # Erstelle einen DataUpdateCoordinator
-    async def async_update_data():
-        """Fetch data from the API."""
-        from .sensor import fetch_data, fetch_state_data, fetch_measurements_data
-        global last_cumulative_value, daily_reset_time, weekly_reset_time, monthly_reset_time
-        global daily_consumption, weekly_consumption, monthly_consumption
-
-        _LOGGER.debug("Starting data update...")
-
-        # Abrufen der Daten von allen APIs
-        cumulative_data = await fetch_data(api_key)
-        state_data = await fetch_state_data(api_key)
-        measurements_data = await fetch_measurements_data(api_key)
-
-        if cumulative_data is not None and state_data is not None and measurements_data is not None:
-            _LOGGER.debug(
-                "Data fetched successfully: cumulative=%s, state=%s, measurements=%s",
-                cumulative_data, state_data, measurements_data
-            )
-
-            # Berechnung des täglichen, wöchentlichen und monatlichen Verbrauchs
-            now = datetime.now()
-            if now >= daily_reset_time + timedelta(days=1):
-                daily_reset_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
-                daily_consumption = 0
-
-            if now >= weekly_reset_time + timedelta(weeks=1):
-                weekly_reset_time = daily_reset_time - timedelta(days=daily_reset_time.weekday())
-                weekly_consumption = 0
-
-            if now >= monthly_reset_time + timedelta(days=31):
-                monthly_reset_time = now.replace(day=1)
-                monthly_consumption = 0
-
-            if last_cumulative_value is not None:
-                delta = cumulative_data - last_cumulative_value
-                daily_consumption += delta
-                weekly_consumption += delta
-                monthly_consumption += delta
-
-            last_cumulative_value = cumulative_data
-
-            return {
-                "cumulativeWaterConsumption": cumulative_data,
-                "dailyWaterConsumption": daily_consumption,
-                "weeklyWaterConsumption": weekly_consumption,
-                "monthlyWaterConsumption": monthly_consumption,
-                "online": state_data.get("online"),
-                "mode": state_data.get("mode", {}).get("name"),
-                "mlState": state_data.get("mlState"),
-                "absenceModeEnabled": state_data.get("waterProtection", {}).get("absenceModeEnabled"),
-                "pauseLeakageProtectionUntilUTC": state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC"),
-                "waterTemp": measurements_data.get("waterTemp"),
-                "pressure": measurements_data.get("pressure"),
-                "flowRate": measurements_data.get("flowRate"),
-                "lastWaterTapVolume": measurements_data.get("lastWaterTapVolume"),
-                "lastWaterTapDuration": measurements_data.get("lastWaterTapDuration"),
-            }
-        _LOGGER.warning("Failed to fetch data from one or more APIs.")
-        return {}
-
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name="Watercryst Biocat",
         update_method=async_update_data,
-        update_interval=timedelta(seconds=30),  # Aktualisierungsintervall auf 60 Sekunden setzen
+        update_interval=timedelta(seconds=30),
     )
 
-    # Erste Aktualisierung durchführen
     await coordinator.async_config_entry_first_refresh()
 
-    # Speichere den Coordinator
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # Weiterleitung an die Sensorplattform
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    # Weiterleitung an die Plattformen
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "switch"])
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -112,6 +50,66 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
+async def async_update_data():
+    """Fetch data from the API."""
+    from .sensor import fetch_data, fetch_state_data, fetch_measurements_data
+    global last_cumulative_value, daily_reset_time, weekly_reset_time, monthly_reset_time
+    global daily_consumption, weekly_consumption, monthly_consumption
+
+    _LOGGER.debug("Starting data update...")
+
+    # Abrufen der Daten von allen APIs
+    cumulative_data = await fetch_data(api_key)
+    state_data = await fetch_state_data(api_key)
+    measurements_data = await fetch_measurements_data(api_key)
+
+    if cumulative_data is not None and state_data is not None and measurements_data is not None:
+        _LOGGER.debug(
+            "Data fetched successfully: cumulative=%s, state=%s, measurements=%s",
+            cumulative_data, state_data, measurements_data
+        )
+
+        # Berechnung des täglichen, wöchentlichen und monatlichen Verbrauchs
+        now = datetime.now()
+        if now >= daily_reset_time + timedelta(days=1):
+            daily_reset_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            daily_consumption = 0
+
+        if now >= weekly_reset_time + timedelta(weeks=1):
+            weekly_reset_time = daily_reset_time - timedelta(days=daily_reset_time.weekday())
+            weekly_consumption = 0
+
+        if now >= monthly_reset_time + timedelta(days=31):
+            monthly_reset_time = now.replace(day=1)
+            monthly_consumption = 0
+
+        if last_cumulative_value is not None:
+            delta = cumulative_data - last_cumulative_value
+            daily_consumption += delta
+            weekly_consumption += delta
+            monthly_consumption += delta
+
+        last_cumulative_value = cumulative_data
+
+        return {
+            "cumulativeWaterConsumption": cumulative_data,
+            "dailyWaterConsumption": daily_consumption,
+            "weeklyWaterConsumption": weekly_consumption,
+            "monthlyWaterConsumption": monthly_consumption,
+            "online": state_data.get("online"),
+            "mode": state_data.get("mode", {}).get("name"),
+            "mlState": state_data.get("mlState"),
+            "absenceModeEnabled": state_data.get("waterProtection", {}).get("absenceModeEnabled"),
+            "pauseLeakageProtectionUntilUTC": state_data.get("waterProtection", {}).get("pauseLeakageProtectionUntilUTC"),
+            "waterTemp": measurements_data.get("waterTemp"),
+            "pressure": measurements_data.get("pressure"),
+            "flowRate": measurements_data.get("flowRate"),
+            "lastWaterTapVolume": measurements_data.get("lastWaterTapVolume"),
+            "lastWaterTapDuration": measurements_data.get("lastWaterTapDuration"),
+        }
+    _LOGGER.warning("Failed to fetch data from one or more APIs.")
+    return {}
 
 async def fetch_data(api_key):
     """Fetch data from the Watercryst Biocat API."""
