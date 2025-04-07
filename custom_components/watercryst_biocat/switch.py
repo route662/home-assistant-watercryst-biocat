@@ -6,10 +6,6 @@ from . import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 SWITCHES = {
-    "ack_event": {
-        "name": "Acknowledge Event",
-        "url": "https://appapi.watercryst.com/v1/ackevent",
-    },
     "absence_enable": {
         "name": "Enable Absence Mode",
         "url": "https://appapi.watercryst.com/v1/absence/enable",
@@ -50,7 +46,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     api_key = entry.data["api_key"]
 
     switches = [
-        WatercrystSwitch(coordinator, api_key, switch_type, switch["name"], switch["url"])
+        WatercrystSwitch(coordinator, api_key, switch_type, switch["name"], switch["url"], entry.entry_id)
         for switch_type, switch in SWITCHES.items()
     ]
     async_add_entities(switches)
@@ -58,7 +54,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class WatercrystSwitch(SwitchEntity):
     """Representation of a Watercryst Biocat switch."""
 
-    def __init__(self, coordinator, api_key, switch_type, name, url):
+    def __init__(self, coordinator, api_key, switch_type, name, url, entry_id):
         """Initialize the switch."""
         self._coordinator = coordinator
         self._api_key = api_key
@@ -66,6 +62,12 @@ class WatercrystSwitch(SwitchEntity):
         self._name = name
         self._url = url
         self._is_on = False
+        self._entry_id = entry_id  # Speichere die Konfigurations-ID
+
+    @property
+    def unique_id(self):
+        """Return a unique ID for the switch."""
+        return f"{self._entry_id}_{self._switch_type}"
 
     @property
     def name(self):

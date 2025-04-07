@@ -32,7 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass,
         _LOGGER,
         name="Watercryst Biocat",
-        update_method=lambda: async_update_data(entry.data["api_key"]),
+        update_method=lambda: async_update_data(api_key),
         update_interval=timedelta(seconds=30),
     )
 
@@ -41,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     # Weiterleitung an die Plattformen
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "switch"])
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "switch", "button"])
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
