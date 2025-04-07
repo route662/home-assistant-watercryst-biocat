@@ -24,6 +24,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Watercryst Biocat from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
+    # Registriere benutzerdefinierten Dienst
+    async def handle_ack_event(call):
+        api_key = entry.data["api_key"]
+        url = "https://appapi.watercryst.com/v1/ackevent"
+        headers = {"accept": "application/json", "x-api-key": api_key}
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, headers=headers) as response:
+                    response.raise_for_status()
+                    _LOGGER.debug("Successfully acknowledged event")
+            except Exception as e:
+                _LOGGER.error("Failed to acknowledge event: %s", e)
+
+    hass.services.async_register(DOMAIN, "ack_event", handle_ack_event)
+
     # Lese den API-Schlüssel aus der Konfiguration
     api_key = entry.data["api_key"]
 
