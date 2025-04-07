@@ -28,12 +28,6 @@ SENSORS.update({
     "lastWaterTapDuration": {"name": "Dauer des letzten Wasserzapfens", "unit": "s", "icon": "mdi:timer"},
 })
 
-SENSORS.update({
-    "dailyWaterConsumption": {"name": "Täglicher Wasserverbrauch", "unit": "L", "icon": "mdi:calendar-today"},
-    "weeklyWaterConsumption": {"name": "Wöchentlicher Wasserverbrauch", "unit": "L", "icon": "mdi:calendar-week"},
-    "monthlyWaterConsumption": {"name": "Monatlicher Wasserverbrauch", "unit": "L", "icon": "mdi:calendar-month"},
-})
-
 async def fetch_data(api_key):
     """Fetch data from the Watercryst Biocat API."""
     headers = {"accept": "application/json", "x-api-key": api_key}
