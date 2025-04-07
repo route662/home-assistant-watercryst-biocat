@@ -188,7 +188,7 @@ class WatercrystSensor(CoordinatorEntity):
             "name": "Watercryst Biocat",
             "manufacturer": "Watercryst",
             "model": "Biocat",
-            "sw_version": "1.5.9",
+            "sw_version": "1.5.10",
             "entry_type": "service",  # Optional: Markiert es als Dienstgerät
         }
 
