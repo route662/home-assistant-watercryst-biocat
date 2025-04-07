@@ -6,14 +6,6 @@ from . import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 SWITCHES = {
-    "absence_enable": {
-        "name": "Enable Absence Mode",
-        "url": "https://appapi.watercryst.com/v1/absence/enable",
-    },
-    "absence_disable": {
-        "name": "Disable Absence Mode",
-        "url": "https://appapi.watercryst.com/v1/absence/disable",
-    },
     "leakage_pause": {
         "name": "Pause Leakage Protection",
         "url": "https://appapi.watercryst.com/v1/leakageprotection/pause",
@@ -42,12 +34,11 @@ SWITCHES = {
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Watercryst Biocat switches."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
     api_key = entry.data["api_key"]
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
     switches = [
-        WatercrystSwitch(coordinator, api_key, switch_type, switch["name"], switch["url"], entry.entry_id)
-        for switch_type, switch in SWITCHES.items()
+        AbsenceModeSwitch(api_key, entry.entry_id, coordinator),
     ]
     async_add_entities(switches)
 
@@ -102,3 +93,49 @@ class WatercrystSwitch(SwitchEntity):
                     _LOGGER.debug("Successfully sent command to %s", self._url)
             except Exception as e:
                 _LOGGER.error("Failed to send command to %s: %s", self._url, e)
+
+class AbsenceModeSwitch(SwitchEntity):
+    """Representation of the Absence Mode switch."""
+
+    def __init__(self, api_key, entry_id, coordinator):
+        """Initialize the switch."""
+        self._api_key = api_key
+        self._entry_id = entry_id
+        self._coordinator = coordinator
+
+    @property
+    def name(self):
+        """Return the name of the switch."""
+        return "Biocat Absence Mode"
+
+    @property
+    def unique_id(self):
+        """Return a unique ID for the switch."""
+        return f"{self._entry_id}_absence_mode"
+
+    @property
+    def is_on(self):
+        """Return the state of the switch."""
+        return self._coordinator.data.get("absenceModeEnabled", False)
+
+    async def async_turn_on(self, **kwargs):
+        """Enable absence mode."""
+        await self._send_command("https://appapi.watercryst.com/v1/absence/enable")
+        self._coordinator.data["absenceModeEnabled"] = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Disable absence mode."""
+        await self._send_command("https://appapi.watercryst.com/v1/absence/disable")
+        self._coordinator.data["absenceModeEnabled"] = False
+        self.async_write_ha_state()
+
+    async def _send_command(self, url):
+        """Send a command to the API."""
+        headers = {"accept": "application/json", "x-api-key": self._api_key}
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, headers=headers) as response:
+                    response.raise_for_status()
+            except Exception as e:
+                _LOGGER.error("Failed to send command to %s: %s", url, e)
